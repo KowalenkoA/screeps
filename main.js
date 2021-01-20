@@ -1,9 +1,13 @@
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 let roleBuilder = require('role.builder');
+let roadBuilder = require('roadBuilder');
+
+let start = true;
 
 module.exports.loop = function () {
     let worker1 = [WORK, CARRY, MOVE];
+    
     
     for(let name in Game.creeps){
         let creep = Game.creeps[name];
@@ -37,9 +41,14 @@ module.exports.loop = function () {
         }
     }
     //console.log(spn.pos)
-    if (spn.room.createConstructionSite(spn.pos.x + 2, spn.pos.y + 2, STRUCTURE_EXTENSION)){
-        spn.room.createConstructionSite(spn.pos.x + 2, spn.pos.y + 2, STRUCTURE_EXTENSION)
+    if (spn.room.createConstructionSite(spn.pos.x + 2, spn.pos.y + 2, STRUCTURE_ROAD)){
+        spn.room.createConstructionSite(spn.pos.x + 2, spn.pos.y + 2, STRUCTURE_ROAD)
     };
+    
+    if (start){
+        let spawn = Game.spawns['Spawn1']
+        roadBuilder.run(spawn)
+    }
 
     /*var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
     console.log('Harvesters: ' + harvesters.length);
