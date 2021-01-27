@@ -1,18 +1,24 @@
-var roleHarvester = require('role.harvester');
+var roleMiner = require('role.miner');
 var roleUpgrader = require('role.upgrader');
 let roleBuilder = require('role.builder');
 let roadBuilder = require('roadBuilder');
 
 let start = true;
+let sourceObj = [];
+let chet = 0;
 
 module.exports.loop = function () {
+    chet += 1;
+    let miner1 = [WORK, CARRY, MOVE];
     let worker1 = [WORK, CARRY, MOVE];
     
-    
+    let sources = Game.spawns['Spawn1'].pos.findClosestByRange(FIND_SOURCES);
+       // console.log(sources.pos)
     for(let name in Game.creeps){
+        
         let creep = Game.creeps[name];
-        if (creep.memory.role == 'worker'){
-            roleHarvester.run(creep);
+        if (creep.memory.role == 'miner'){
+            roleMiner.run(creep);
         }else if (creep.memory.role == 'upgrader'){
             roleUpgrader.run(creep);
         }else if (creep.memory.role == 'builder'){
@@ -22,14 +28,16 @@ module.exports.loop = function () {
     
     let spn = Game.spawns['Spawn1'];
     //console.log(spn.store.getFreeCapacity(RESOURCE_ENERGY))
-    if (spn.store.getFreeCapacity(RESOURCE_ENERGY) == 0){
-        let workers = _.filter(Game.creeps, (creep) => creep.memory.role == 'worker');
+    if (spn.store.getFreeCapacity(RESOURCE_ENERGY) == 0 && chet === 5){
+        let miners = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner');
         let upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
         let builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
-        if (workers.length < 2){
-            let workerName = 'Worker' + workers.length + 1;
-            console.log('Spawning worker: ' + workerName);
-            spn.spawnCreep(worker1, workerName, {memory: {role: 'worker'}})
+        if (miners.length < 2){
+            let sources = Game.spawns['Spawn1'].pos.findClosestByRange(FIND_SOURCES);
+            //console.log(sources.pos)
+            let minersName = 'Miner' + miners.length + 1;
+            console.log('Spawning miner: ' + minersName);
+            spn.spawnCreep(miner1, minersName, {memory: {role: 'miner', sourcePos: sources.pos, sourceId: sources.id}})
         }else if (upgraders.length < 2){
             let upgraderName = 'Upgrader' + upgraders.length + 1;
             console.log('Spawning upgrader: ' + upgraderName);
@@ -41,13 +49,17 @@ module.exports.loop = function () {
         }
     }
     //console.log(spn.pos)
-    if (spn.room.createConstructionSite(spn.pos.x + 2, spn.pos.y + 2, STRUCTURE_ROAD)){
+    /*if (spn.room.createConstructionSite(spn.pos.x + 2, spn.pos.y + 2, STRUCTURE_ROAD)){
         spn.room.createConstructionSite(spn.pos.x + 2, spn.pos.y + 2, STRUCTURE_ROAD)
-    };
+    };*/
     
     if (start){
         let spawn = Game.spawns['Spawn1']
         roadBuilder.run(spawn)
+    }
+    
+    if (chet === 11){
+        chet = 0;
     }
 
     /*var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
