@@ -1,5 +1,7 @@
 let buildArr = [];
 let id = 0;
+let start = false;
+let workObj;
 
 var roadBuilder = {
 
@@ -16,16 +18,57 @@ var roadBuilder = {
         let newY = s1.y;
         let end = true;
         
-        let goals = _.map(spawn.room.find(FIND_SOURCES), function(source) {
-            // We can't actually walk on sources-- set `range` to 1 
-            // so we path next to it.
-            return { pos: source.pos, range: 1 };
-         });
-
-        let road = PathFinder.search(spawn.pos, goals);
-        console.log(road)
+        if (!Memory.buildArr){
+            Memory.buildArr = [];
+        }
+        
+        if (!Memory.buildArr.length){
+            console.log('generate build pos')
+            start = true;
+            buildAround(spawn, spawn.pos);
+            let goals = _.map(spawn.room.find(FIND_SOURCES), function(source) {
+                // We can't actually walk on sources-- set `range` to 1 
+                // so we path next to it.
+                return { pos: source.pos, range: 1 };
+            });
     
-        if (!buildArr.length){
+            let road = PathFinder.search(spawn.pos, goals[0]);
+            //console.log(goals[1].pos)
+            //console.log(road.path)
+            goals.forEach( row => {
+                //console.log(row.pos);
+                road = PathFinder.search(spawn.pos, row);
+                //console.log(road.path[0].x);
+                road.path.forEach( (coord, id) => {
+                    Memory.buildArr.push({ type: 'road', coord: { x: coord.x, y: coord.y}, id: id, stat: 'none' })
+                })
+            });
+            
+        }
+        
+        //spawn.room.createConstructionSite(buildArr[0].coord.x, buildArr[0].coord.y, STRUCTURE_ROAD);
+        let buildInProg = spawn.room.find(FIND_MY_CONSTRUCTION_SITES);
+        //console.log(buildInProg)
+        if (!buildInProg.length){
+            for (let i = 0; i < Memory.buildArr.length; i++){
+                let row = Memory.buildArr[i];
+                if (row.stat === 'build'){
+                    Memory.buildArr[i].stat = 'complite';
+                }
+                if (row.stat === 'none'){
+                    Memory.buildArr[i].stat = 'build';
+                    spawn.room.createConstructionSite(row.coord.x, row.coord.y, STRUCTURE_ROAD);
+                    i = Memory.buildArr.length + 1;
+                }
+            }
+            
+        }
+        
+        //console.log(Memory.buildArr[0].stat)
+        
+        
+    
+        /*if (!buildArr.length){
             while(end){
                 if (newX === sp.x && newY === sp.y){
                     end = false;
@@ -44,7 +87,7 @@ var roadBuilder = {
                 }
             }
             buildAround(spawn, spawn.pos);
-        }
+        }*/
         
         //console.log(buildArr[0].coord.x)
         
